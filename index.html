@@ -1,0 +1,1330 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a73">
+<meta name="description" content="Ramasse les déchets de ton quartier, gagne des points et habille ton avatar.">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzFmM2E3MyIvPjxwYXRoIGQ9Ik05IDI4IFE1IDE3IDEyIDEyIEwyMCAxMiBRMjcgMTcgMjMgMjggUTE2IDMwIDkgMjhaIiBmaWxsPSIjM2Y4YTVmIi8+PHBhdGggZD0iTTEzIDEyIEwxMCA2IE0xOSAxMiBMMjIgNiIgc3Ryb2tlPSIjM2Y4YTVmIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMiAyMCBsMyAzIGw2IC02IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMi40IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4K" type="image/svg+xml">
+<title>Ramasse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one-column phone app — avatar hero, one big hi-vis action, bottom tab bar.
+   Paris street-sign plaques (enamel blue, green frame) mark every arrondissement. */
+:root {
+  --bg: #e9ede8;          /* pavement */
+  --surface: #ffffff;
+  --ink: #16213a;
+  --muted: #5b6577;
+  --line: #d3d9d1;
+  --plaque: #1f3a73;      /* street-sign blue */
+  --frame: #3f8a5f;       /* street-sign green frame */
+  --hivis: #f2d024;       /* hi-vis / points */
+  --hivis-ink: #16213a;
+  --disc: #d7e2d6;        /* avatar backdrop */
+  --bin: #2f6b4f;
+  --danger: #b3261e;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --shadow: 0 1px 2px rgba(22,33,58,.06), 0 6px 20px rgba(22,33,58,.07);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141d; --surface: #182130; --ink: #e8ecf3; --muted: #99a3b4; --line: #2a3447;
+    --plaque: #2c4d90; --frame: #4f9c73; --hivis: #f2d024; --hivis-ink: #16213a;
+    --disc: #22324a; --bin: #4f9c76; --danger: #ff8a80;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141d; --surface: #182130; --ink: #e8ecf3; --muted: #99a3b4; --line: #2a3447;
+  --plaque: #2c4d90; --frame: #4f9c73; --hivis: #f2d024; --hivis-ink: #16213a;
+  --disc: #22324a; --bin: #4f9c76; --danger: #ff8a80;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--frame); outline-offset: 2px; }
+
+.app { max-width: 520px; margin: 0 auto; padding: 0 16px calc(96px + env(safe-area-inset-bottom, 0px)); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 14px 6px; }
+.brand { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: .01em; display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 26px; height: 26px; }
+.sync { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.sync::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.sync[data-s="cloud"]::before { background: var(--frame); }
+.sync[data-s="error"]::before { background: var(--danger); }
+
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h2 { font-size: 22px; font-weight: 700; margin-block: 26px 10px; }
+.eyebrow { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; font-size: 13px; font-weight: 600; color: var(--muted); }
+.small { font-size: 13px; color: var(--muted); }
+.tab[hidden] { display: none; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: center; margin-top: 6px; }
+.avatar { display: block; width: 100%; height: auto; }
+.hero-info { min-width: 0; display: grid; gap: 4px; }
+.hero-info h1 { font-size: 32px; line-height: 1; font-weight: 800; }
+.pts { font-family: var(--display); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pts b { font-size: 26px; }
+.bar { height: 10px; border-radius: 6px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.bar i { display: block; height: 100%; width: 0; background: var(--hivis); border-radius: 6px; transition: width .6s ease; background-image: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(0,0,0,.08) 6px 12px); }
+
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 16px; }
+.stats div { background: var(--surface); border-radius: 12px; padding: 10px 12px; display: grid; box-shadow: var(--shadow); }
+.stats b { font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stats span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+.log-btn { width: 100%; margin-top: 16px; border: 0; border-radius: 16px; padding: 18px; background: var(--hivis); color: var(--hivis-ink); font-family: var(--display); font-size: 24px; font-weight: 800; letter-spacing: .02em; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 0 #c4a70f; transition: transform .08s; }
+.log-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #c4a70f; }
+.log-btn svg { width: 28px; height: 28px; }
+
+.next-unlock { margin-top: 14px; display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; background: var(--surface); border: 1.5px dashed var(--line); border-radius: 14px; padding: 10px 12px; }
+.next-unlock .thumb { width: 64px; }
+.next-unlock b { font-family: var(--display); font-size: 18px; }
+.mini-bar { height: 6px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.mini-bar i { display: block; height: 100%; background: var(--frame); }
+
+/* Plaque: Paris street sign */
+.plaque { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 54px; padding: 3px 7px 4px; background: var(--plaque); color: #fff; border-radius: 5px; box-shadow: inset 0 0 0 2px var(--plaque), inset 0 0 0 3.5px var(--frame), inset 0 0 0 4.5px #fff; font-family: var(--display); line-height: 1; }
+.plaque .n { font-size: 20px; font-weight: 700; }
+.plaque .n sup { font-size: 11px; font-weight: 600; }
+.plaque .l { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; opacity: .85; margin-top: 1px; }
+
+/* History */
+.history { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.history li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; background: var(--surface); border-radius: 12px; padding: 10px 12px; box-shadow: var(--shadow); }
+.history .meta { min-width: 0; }
+.history .meta b { font-family: var(--display); font-size: 18px; font-weight: 700; }
+.history .meta p { margin: 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.history .right { display: grid; justify-items: end; gap: 2px; }
+.history .gain { font-family: var(--display); font-weight: 700; font-size: 17px; color: var(--bin); font-variant-numeric: tabular-nums; }
+.linkbtn { background: none; border: 0; padding: 2px 4px; font-size: 12px; color: var(--muted); text-decoration: underline; }
+.linkbtn.danger { color: var(--danger); }
+.empty { background: var(--surface); border-radius: 14px; padding: 18px; text-align: center; color: var(--muted); border: 1.5px dashed var(--line); }
+
+/* Wardrobe */
+.stage { display: grid; justify-items: center; margin-top: 4px; }
+.stage .avatar { max-width: 220px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-block: 4px 8px; scrollbar-width: none; }
+.chip { flex: none; border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-family: var(--display); font-weight: 600; font-size: 16px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.items { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.item { position: relative; border: 2px solid transparent; background: var(--surface); border-radius: 14px; padding: 6px 6px 8px; display: grid; gap: 2px; justify-items: center; text-align: center; box-shadow: var(--shadow); }
+.item .avatar { width: 80px; }
+.item b { font-family: var(--display); font-size: 15px; font-weight: 700; line-height: 1.1; }
+.item small { font-size: 11px; color: var(--muted); }
+.item[aria-pressed="true"] { border-color: var(--frame); }
+.item[aria-pressed="true"]::after { content: "Porté"; position: absolute; top: 6px; right: 6px; background: var(--frame); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px; text-transform: uppercase; letter-spacing: .05em; }
+.item.locked { cursor: not-allowed; }
+.item.locked .avatar { filter: grayscale(1) opacity(.35); }
+.item.locked .lock { position: absolute; top: 34px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); font-family: var(--display); font-weight: 700; font-size: 13px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.look-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+.look-row .lbl { width: 70px; font-size: 13px; color: var(--muted); }
+.swatch { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1.5px var(--line); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2.5px var(--ink); }
+
+/* Paris grid */
+.arr-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.arr { display: grid; justify-items: center; gap: 4px; padding: 8px 4px; border-radius: 10px; background: var(--surface); position: relative; overflow: hidden; }
+.arr .heat { position: absolute; inset: 0; background: var(--frame); opacity: 0; }
+.arr > * { position: relative; }
+.arr .plaque { min-width: 0; width: 100%; max-width: 54px; }
+.arr .c { font-family: var(--display); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.board { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.board li { display: grid; grid-template-columns: 26px 48px 1fr auto; gap: 10px; align-items: center; background: var(--surface); border-radius: 12px; padding: 6px 12px 6px 8px; box-shadow: var(--shadow); }
+.board li.me { outline: 2px solid var(--hivis); }
+.board .rank { font-family: var(--display); font-weight: 800; font-size: 20px; text-align: center; color: var(--muted); }
+.board .who { min-width: 0; }
+.board .who b { display: block; font-family: var(--display); font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board .num { font-family: var(--display); font-weight: 700; font-size: 20px; text-align: right; font-variant-numeric: tabular-nums; line-height: 1; }
+.board .num small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
+.rules { margin: 0; padding-left: 18px; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+
+/* Tab bar */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; z-index: 5; }
+.tabs .inner { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; max-width: 520px; }
+.tabs button { background: none; border: 0; padding: 6px; display: grid; justify-items: center; gap: 2px; color: var(--muted); font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: .03em; }
+.tabs button svg { width: 24px; height: 24px; }
+.tabs button[aria-selected="true"] { color: var(--ink); }
+.tabs button[aria-selected="true"] svg { color: var(--frame); }
+
+/* Sheet + modal */
+.scrim { position: fixed; inset: 0; background: rgba(10,15,25,.5); z-index: 10; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--surface); width: 100%; max-width: 520px; border-radius: 22px 22px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); max-height: 92%; overflow-y: auto; display: grid; gap: 16px; animation: up .22s ease-out; }
+@keyframes up { from { transform: translateY(30px); opacity: .6; } }
+.sheet h3 { font-size: 26px; font-weight: 800; }
+.field { display: grid; gap: 6px; }
+.field > label, .field > .lab { font-family: var(--display); font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.stepper { display: flex; align-items: center; gap: 14px; }
+.stepper button { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--bg); font-size: 26px; font-weight: 600; line-height: 1; }
+.stepper output { font-family: var(--display); font-size: 40px; font-weight: 800; min-width: 44px; text-align: center; font-variant-numeric: tabular-nums; }
+.stepper .litres { color: var(--muted); font-size: 14px; }
+.pick-arr { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.pick-arr button { border: 0; background: none; padding: 2px; border-radius: 8px; display: grid; justify-items: center; }
+.pick-arr .plaque { width: 100%; min-width: 0; opacity: .45; }
+.pick-arr button[aria-pressed="true"] .plaque { opacity: 1; transform: scale(1.06); }
+.arr-name { font-size: 14px; color: var(--muted); min-height: 1.4em; }
+input[type=text], input[type=date] { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+input[type=number] { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); font-variant-numeric: tabular-nums; }
+details.help { font-size: 14px; color: var(--muted); background: var(--bg); border-radius: 10px; padding: 8px 12px; }
+details.help summary { cursor: pointer; font-weight: 600; color: var(--ink); }
+details.help ol { margin: 8px 0 4px; padding-left: 20px; display: grid; gap: 4px; }
+.arr-rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.arr-rank li { display: grid; grid-template-columns: 26px 58px 1fr auto; gap: 10px; align-items: center; background: var(--surface); border-radius: 12px; padding: 6px 12px 6px 8px; box-shadow: var(--shadow); }
+.arr-rank .rank { font-family: var(--display); font-weight: 800; font-size: 20px; text-align: center; color: var(--muted); }
+.arr-rank .nm { min-width: 0; display: grid; gap: 4px; }
+.arr-rank .nm b { font-family: var(--display); font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arr-rank .track { height: 6px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.arr-rank .track i { display: block; height: 100%; background: var(--frame); }
+.arr-rank li.mine .track i { background: var(--hivis); }
+.arr-rank .num { font-family: var(--display); font-weight: 700; font-size: 20px; text-align: right; font-variant-numeric: tabular-nums; line-height: 1; }
+.arr-rank .num small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
+.board-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-block: 26px 10px; }
+.board-head h2 { margin: 0; }
+select { padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); font-family: var(--display); font-weight: 600; font-size: 16px; max-width: 100%; }
+@media (max-width: 460px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* Sign-in gate */
+.gate { min-height: 100%; display: grid; place-items: center; padding: 24px 16px; }
+.gate[hidden] { display: none; }
+.gate-card { width: 100%; max-width: 400px; display: grid; gap: 14px; justify-items: stretch; text-align: center; }
+.gate-card .brand { justify-content: center; font-size: 34px; }
+.gate-avatar { justify-self: center; width: 170px; }
+.gate .lead { margin: 0; font-size: 17px; color: var(--muted); text-wrap: balance; }
+.gate-form { display: grid; gap: 12px; text-align: left; background: var(--surface); border-radius: 18px; padding: 18px 16px; box-shadow: var(--shadow); }
+.gate-form[hidden] { display: none; }
+.gate-form h3 { font-size: 24px; font-weight: 800; }
+.gate-form .small { margin: 0; }
+.gate-links { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+input[type=password] { width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin-top: -4px; }
+.gate-links { align-items: center; }
+.hint { margin: -4px 0 0; font-size: 13px; color: var(--muted); min-height: 1.4em; }
+.hint[data-s="ok"] { color: var(--frame); }
+.hint[data-s="bad"] { color: var(--danger); }
+.err { margin: 0; color: var(--danger); font-size: 14px; min-height: 1.2em; }
+.setup { background: var(--surface); border-radius: 14px; padding: 14px; border: 1.5px dashed var(--danger); }
+.setup[hidden] { display: none; }
+.btn:disabled { opacity: .55; cursor: progress; }
+
+/* Account */
+.account { display: grid; gap: 12px; background: var(--surface); border-radius: 14px; padding: 14px; box-shadow: var(--shadow); }
+.acc-id { display: grid; min-width: 0; }
+.acc-id b { font-family: var(--display); font-size: 22px; overflow-wrap: anywhere; }
+.acc-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.acc-actions .btn { font-size: 16px; padding: 10px; }
+.acc-actions #logoutBtn { grid-column: 1 / -1; }
+.btn { border: 0; border-radius: 12px; padding: 14px; font-family: var(--display); font-size: 20px; font-weight: 700; }
+.btn.primary { background: var(--hivis); color: var(--hivis-ink); }
+.btn.ghost { background: var(--bg); border: 1.5px solid var(--line); }
+.preview-gain { font-size: 14px; color: var(--muted); text-align: center; }
+
+.modal { background: var(--surface); width: calc(100% - 32px); max-width: 380px; border-radius: 22px; padding: 22px 18px 18px; margin-bottom: 30vh; display: grid; justify-items: center; gap: 8px; text-align: center; animation: pop .35s cubic-bezier(.2,1.4,.4,1); }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+.modal .avatar { width: 170px; }
+.modal h3 { font-size: 30px; font-weight: 800; }
+.modal .btn { width: 100%; }
+.burst { color: var(--frame); font-family: var(--display); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: 14px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; z-index: 20; max-width: calc(100% - 32px); text-align: center; }
+
+@media (max-width: 380px) { .hero { grid-template-columns: 120px 1fr; } .hero-info h1 { font-size: 26px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- Sign-in: e-mail → one-time code → username -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 29 Q5 17 12 11 L20 11 Q27 17 23 29 Q16 31 9 29Z" fill="var(--frame)"/><path d="M13 11 L10 5 M19 11 L22 5" stroke="var(--frame)" stroke-width="3" stroke-linecap="round"/><path d="M12 20 l3 3 l6 -6" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Ramasse
+    </div>
+    <div class="gate-avatar" id="gateAvatar"></div>
+    <p class="lead">Ramasse les déchets de ton quartier, gagne des points et habille ton avatar.</p>
+
+    <p class="small" id="gateLoading">Chargement…</p>
+
+    <form id="loginForm" class="gate-form" hidden>
+      <h3>Se connecter</h3>
+      <div class="field">
+        <label for="loginName">Pseudo</label>
+        <input type="text" id="loginName" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label for="loginPwd">Mot de passe</label>
+        <input type="password" id="loginPwd" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn primary" id="loginBtn">Se connecter</button>
+      <div class="gate-links">
+        <span class="small">Pas encore de compte ?</span>
+        <button type="button" class="linkbtn" id="toSignup">Créer un compte</button>
+      </div>
+    </form>
+
+    <form id="signupForm" class="gate-form" hidden>
+      <h3>Créer un compte</h3>
+      <div class="field">
+        <label for="signupName">Choisis ton pseudo</label>
+        <input type="text" id="signupName" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false" required placeholder="balayeur_du_11e">
+      </div>
+      <p class="hint" id="signupNameMsg">3 à 20 caractères : lettres, chiffres, point, tiret ou _</p>
+      <div class="field">
+        <label for="signupPwd">Mot de passe (8 caractères minimum)</label>
+        <input type="password" id="signupPwd" autocomplete="new-password" minlength="8" required>
+      </div>
+      <label class="check"><input type="checkbox" id="showPwd"> Afficher le mot de passe</label>
+      <p class="small">Aucun e-mail demandé. Note bien ton mot de passe : on ne peut pas te l'envoyer si tu l'oublies.</p>
+      <button type="submit" class="btn primary" id="signupBtn">C'est parti</button>
+      <div class="gate-links">
+        <span class="small">Déjà un compte ?</span>
+        <button type="button" class="linkbtn" id="toLogin">Se connecter</button>
+      </div>
+    </form>
+
+    <form id="nameForm" class="gate-form" hidden>
+      <h3>Choisis ton pseudo</h3>
+      <p class="small">Il apparaît dans les classements. Tu pourras le changer plus tard.</p>
+      <div class="field">
+        <label for="username">Pseudo</label>
+        <input type="text" id="username" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" required placeholder="balayeur_du_11e">
+      </div>
+      <p class="hint" id="nameMsg">3 à 20 caractères : lettres, chiffres, point, tiret ou _</p>
+      <button type="submit" class="btn primary" id="nameBtn">C'est parti</button>
+    </form>
+
+    <div id="setupMsg" class="setup" hidden>
+      <b>Configuration manquante.</b>
+      <p class="small">Renseigne l'URL et la clé publique de ton projet Supabase dans <code>config.js</code> (voir le README).</p>
+    </div>
+
+    <p class="err" id="gateErr" role="alert"></p>
+  </div>
+</div>
+
+<div class="app" id="app" hidden>
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 29 Q5 17 12 11 L20 11 Q27 17 23 29 Q16 31 9 29Z" fill="var(--frame)"/><path d="M13 11 L10 5 M19 11 L22 5" stroke="var(--frame)" stroke-width="3" stroke-linecap="round"/><path d="M12 20 l3 3 l6 -6" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Ramasse
+    </div>
+    <div class="sync" id="sync" data-s="cloud">Synchronisé</div>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section class="tab" id="tab-home">
+      <div class="hero">
+        <div id="heroAvatar"></div>
+        <div class="hero-info">
+          <div class="eyebrow" id="lvlNum">Niveau 1</div>
+          <h1 id="lvlName">Recrue</h1>
+          <div class="pts"><b id="pts">0</b> pts</div>
+          <div class="bar"><i id="bar"></i></div>
+          <div class="small" id="nextLvl"></div>
+        </div>
+      </div>
+      <div class="stats">
+        <div><b id="sBags">0</b><span>Sacs</span></div>
+        <div><b id="sLitres">0</b><span>Litres</span></div>
+        <div><b id="sSteps">0</b><span>Pas</span></div>
+        <div><b id="sStreak">0</b><span>Série (sem.)</span></div>
+      </div>
+      <button class="log-btn" id="openLog" type="button">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 29 Q5 17 12 11 L20 11 Q27 17 23 29 Q16 31 9 29Z" fill="currentColor"/><path d="M13 11 L10 5 M19 11 L22 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        Noter un sac de 30 L
+      </button>
+      <div id="nextUnlock"></div>
+      <h2>Derniers ramassages</h2>
+      <ul class="history" id="history"></ul>
+    </section>
+
+    <!-- WARDROBE -->
+    <section class="tab" id="tab-wardrobe" hidden>
+      <div class="stage" id="stageAvatar"></div>
+      <div class="chips" id="slotChips" role="tablist" aria-label="Catégories de la garde-robe"></div>
+      <div class="items" id="items"></div>
+      <h2>Ton apparence</h2>
+      <div class="look-row" id="lookSkin"><span class="lbl">Peau</span></div>
+      <div class="look-row" id="lookHair"><span class="lbl">Cheveux</span></div>
+      <div class="look-row" id="lookStyle"><span class="lbl">Coupe</span></div>
+    </section>
+
+    <!-- PARIS -->
+    <section class="tab" id="tab-paris" hidden>
+      <h2 style="margin-top:10px">Mon Paris</h2>
+      <p class="small" style="margin:0 0 10px">Tes sacs par arrondissement. Ton premier sac dans un nouvel arrondissement rapporte +50 pts.</p>
+      <div class="arr-grid" id="arrGrid"></div>
+      <h2>Classement des arrondissements</h2>
+      <p class="small" id="arrRankNote" style="margin:0 0 10px">Total des sacs ramassés par tous les joueurs de Ramasse, par arrondissement.</p>
+      <ol class="arr-rank" id="arrRank"></ol>
+      <div class="board-head">
+        <h2>Classement des joueurs</h2>
+        <select id="boardArr" aria-label="Filtrer le classement par arrondissement"><option value="0">Tout Paris</option></select>
+      </div>
+      <p class="small" id="boardNote" style="margin:0 0 10px">Chargement du classement…</p>
+      <ul class="board" id="board"></ul>
+      <h2>Comment gagner des points</h2>
+      <ul class="rules">
+        <li><b>100 pts</b> par sac de 30 L</li>
+        <li><b>+50 pts</b> pour ton premier sac dans un nouvel arrondissement</li>
+        <li><b>+20 pts par sac</b> quand ta série hebdo atteint 2 semaines ou plus</li>
+        <li><b>+10 pts par tranche de 1 000 pas</b> pendant un ramassage (jusqu'à 20 000 pas)</li>
+        <li>Les objets d'avatar se débloquent au nombre de sacs, les niveaux aux points</li>
+        <li>Maximum 20 sacs (600 L) par jour</li>
+      </ul>
+      <h2>Mon compte</h2>
+      <div class="account">
+        <div class="acc-id"><b id="accName"></b><span class="small">Tu te connectes avec ce pseudo et ton mot de passe.</span></div>
+        <div class="acc-actions">
+          <button type="button" class="btn ghost" id="renameBtn">Changer de pseudo</button>
+          <button type="button" class="btn ghost" id="pwdBtn">Changer de mot de passe</button>
+          <button type="button" class="btn ghost" id="logoutBtn">Se déconnecter</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" id="tabs" aria-label="Sections" hidden>
+  <div class="inner" role="tablist">
+    <button type="button" role="tab" data-tab="home" aria-selected="true" id="tabbtn-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21 Q4 13 9 9 L15 9 Q20 13 17 21 Q12 22.5 7 21Z"/><path d="M10 9 L8 4 M14 9 L16 4"/></svg>
+      Ramasser
+    </button>
+    <button type="button" role="tab" data-tab="wardrobe" aria-selected="false" id="tabbtn-wardrobe">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 L4 6 L6 10 L8 9 L8 21 L16 21 L16 9 L18 10 L20 6 L16 3 Q12 6 8 3Z"/></svg>
+      Garde-robe
+    </button>
+    <button type="button" role="tab" data-tab="paris" aria-selected="false" id="tabbtn-paris">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 L9 22 M12 2 L15 22 M8 22 L16 22 M10.3 13 L13.7 13 M9.6 17.5 L14.4 17.5"/></svg>
+      Paris
+    </button>
+  </div>
+</nav>
+
+<!-- Log sheet -->
+<div class="scrim" id="sheet" hidden>
+  <form class="sheet" id="logForm" aria-labelledby="sheetTitle">
+    <h3 id="sheetTitle">Noter ton ramassage</h3>
+    <div class="field">
+      <span class="lab">Sacs remplis (30 L chacun)</span>
+      <div class="stepper">
+        <button type="button" id="minus" aria-label="Un sac de moins">−</button>
+        <output id="count">1</output>
+        <button type="button" id="plus" aria-label="Un sac de plus">+</button>
+        <span class="litres" id="litresOut">30 litres</span>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lab">Arrondissement</span>
+      <div class="pick-arr" id="pickArr"></div>
+      <div class="arr-name" id="arrName"></div>
+    </div>
+    <div class="field">
+      <label for="logDate">Date</label>
+      <input type="date" id="logDate" required>
+    </div>
+    <div class="field">
+      <label for="logNote">Où / quoi (facultatif)</label>
+      <input type="text" id="logNote" maxlength="120" placeholder="Rue Oberkampf, plein de canettes">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label for="logSteps">Pas (facultatif)</label>
+        <input type="number" id="logSteps" inputmode="numeric" min="0" max="100000" step="1" placeholder="4200">
+      </div>
+      <div class="field">
+        <label for="logMins">Minutes (facultatif)</label>
+        <input type="number" id="logMins" inputmode="numeric" min="0" max="600" step="1" placeholder="45">
+      </div>
+    </div>
+    <details class="help">
+      <summary>Récupérer tes pas depuis Apple Santé</summary>
+      <p style="margin:8px 0 0">Une page web ne peut pas lire Santé directement. Un raccourci, créé une seule fois, s'en charge :</p>
+      <ol>
+        <li>Dans l'app <b>Raccourcis</b>, crée un raccourci nommé « Pas Ramasse ».</li>
+        <li>Ajoute l'action Santé <b>Rechercher des échantillons</b> : type <b>Nombre de pas</b>, date de début dans les <b>2 dernières heures</b> (adapte à ta sortie).</li>
+        <li>Ajoute <b>Calculer des statistiques</b> : <b>Somme</b> des échantillons.</li>
+        <li>Ajoute <b>Copier dans le presse-papiers</b>.</li>
+      </ol>
+      <p style="margin:4px 0 0">Après un ramassage, lance-le puis colle le résultat dans « Pas ». Sur Android, recopie le chiffre depuis Google Fit ou Samsung Health.</p>
+    </details>
+    <div class="preview-gain" id="previewGain"></div>
+    <div class="row2">
+      <button type="button" class="btn ghost" id="cancelLog">Annuler</button>
+      <button type="submit" class="btn primary">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<!-- Unlock modal -->
+<div class="scrim" id="unlock" hidden style="align-items:center">
+  <div class="modal" role="dialog" aria-labelledby="unlockTitle">
+    <div class="burst" id="unlockKicker">Nouvel objet débloqué</div>
+    <div id="unlockAvatar"></div>
+    <h3 id="unlockTitle"></h3>
+    <p class="small" id="unlockText" style="margin:0 0 6px"></p>
+    <button type="button" class="btn primary" id="wearIt">Je le mets</button>
+    <button type="button" class="btn ghost" id="closeUnlock">Plus tard</button>
+  </div>
+</div>
+
+<!-- Password sheet -->
+<div class="scrim" id="pwdSheet" hidden>
+  <form class="sheet" id="pwdForm" aria-labelledby="pwdTitle">
+    <h3 id="pwdTitle">Changer de mot de passe</h3>
+    <div class="field">
+      <label for="newPwd">Nouveau mot de passe (8 caractères minimum)</label>
+      <input type="password" id="newPwd" autocomplete="new-password" minlength="8" required>
+    </div>
+    <p class="hint" id="pwdMsg"></p>
+    <div class="row2">
+      <button type="button" class="btn ghost" id="cancelPwd">Annuler</button>
+      <button type="submit" class="btn primary" id="pwdSave">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<!-- Rename sheet -->
+<div class="scrim" id="renameSheet" hidden>
+  <form class="sheet" id="renameForm" aria-labelledby="renameTitle">
+    <h3 id="renameTitle">Changer de pseudo</h3>
+    <div class="field">
+      <label for="rename">Nouveau pseudo</label>
+      <input type="text" id="rename" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+    </div>
+    <p class="hint" id="renameMsg">3 à 20 caractères : lettres, chiffres, point, tiret ou _</p>
+    <div class="row2">
+      <button type="button" class="btn ghost" id="cancelRename">Annuler</button>
+      <button type="submit" class="btn primary" id="renameSave">Enregistrer</button>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+// Your Supabase project's connection details (Supabase dashboard → Project Settings → API).
+// Both values are public by design: the database is protected by the security rules in supabase/schema.sql.
+// Never put the "service_role" key here.
+window.RAMASSE_CONFIG = {
+  supabaseUrl: "https://xzjcqdpcrcdeuzkcpbha.supabase.co",
+  supabaseAnonKey: "sb_publishable_Na5Eqsr38RsVt5_lkYTZJg_jWJJVnLN"
+};
+</script>
+<script>
+/* Ramasse: gamified litter picking in Paris. Static app backed by Supabase (see README.md). */
+"use strict";
+
+/* ---------- Game data ---------- */
+const BAG_L = 30, PTS_BAG = 100, PTS_NEW_ARR = 50, PTS_STREAK = 20, PTS_PER_1K_STEPS = 10, STEPS_CAP = 20000;
+const stepPts = (steps) => Math.floor(Math.min(Math.max(0, steps || 0), STEPS_CAP) / 1000) * PTS_PER_1K_STEPS;
+const LEVELS = [
+  [0, "Recrue"], [300, "Bonne âme du quartier"], [1000, "Sentinelle de la rue"],
+  [2500, "Pilier du quartier"], [5000, "Fierté de l'arrondissement"], [10000, "Légende de Paris"]
+];
+const ARR_NAMES = ["Louvre","Bourse","Temple","Hôtel-de-Ville","Panthéon","Luxembourg","Palais-Bourbon","Élysée","Opéra","Entrepôt","Popincourt","Reuilly","Gobelins","Observatoire","Vaugirard","Passy","Batignolles-Monceau","Butte-Montmartre","Buttes-Chaumont","Ménilmontant"];
+const SLOTS = [["top","Hauts"],["hat","Chapeaux"],["hands","Mains"],["tool","Outils"],["extra","Accessoires"],["pet","Animaux"],["backdrop","Décors"]];
+const ITEMS = [
+  { id: "tee",       slot: "top",      name: "T-shirt bleu",           need: 0 },
+  { id: "gloves",    slot: "hands",    name: "Gants de travail",       need: 1,  blurb: "Ton premier sac. Protège tes mains." },
+  { id: "grabber",   slot: "tool",     name: "Pince à déchets",        need: 3,  blurb: "Fini de se baisser pour chaque capsule." },
+  { id: "beret",     slot: "hat",      name: "Béret",                  need: 5,  blurb: "Très parisien. Très sérieux." },
+  { id: "mariniere", slot: "top",      name: "Marinière",              need: 8,  blurb: "Des rayures bien méritées." },
+  { id: "vest",      slot: "top",      name: "Gilet fluo",             need: 12, blurb: "Les voitures te voient. Les pigeons te respectent." },
+  { id: "bucket",    slot: "hat",      name: "Bob",                    need: 16, blurb: "Qu'il pleuve ou qu'il vente, au bord du canal." },
+  { id: "scarf",     slot: "extra",    name: "Écharpe en laine",       need: 20, blurb: "Pour les ramassages de février." },
+  { id: "overalls",  slot: "top",      name: "Salopette de balayeur",  need: 25, blurb: "Là, tu as l'air d'un pro." },
+  { id: "seine",     slot: "backdrop", name: "La Seine au crépuscule", need: 30, blurb: "900 litres. La Seine te dit merci." },
+  { id: "golden",    slot: "tool",     name: "Pince dorée",            need: 40, blurb: "1 200 litres de dévouement." },
+  { id: "cape",      slot: "extra",    name: "Cape de super-héros",    need: 50, blurb: "Cinquante sacs. Chapeau bas." },
+  { id: "pigeon",    slot: "pet",      name: "Pigeon acolyte",         need: 65, blurb: "Il te suit partout maintenant. Il s'appelle Gérard." },
+  { id: "crown",     slot: "hat",      name: "Couronne Eiffel",        need: 80, blurb: "La royauté des trottoirs." },
+  { id: "skyline",   slot: "backdrop", name: "Les toits de Paris",     need: 100, blurb: "3 000 litres. Paris est à toi." }
+];
+const SKINS = ["#f6d4bb","#e8b38e","#c98b62","#9a6440","#65402a"];
+const HAIRS = ["#2b2118","#6b4424","#c9a06a","#b8452e","#9aa0aa"];
+const STYLES = [["short","Courts"],["long","Longs"],["bun","Chignon"],["buzz","Rasés"]];
+
+/* ---------- Helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const ord = (n) => n === 1 ? "1<sup>er</sup>" : n + "<sup>e</sup>";
+const ordTxt = (n) => n === 1 ? "1er" : n + "e";
+const plaque = (n) => `<span class="plaque"><span class="n">${ord(n)}</span><span class="l">Arr<sup>t</sup></span></span>`;
+const fmt = (n) => n.toLocaleString("fr-FR");
+function todayStr() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function toUTC(s) { const [y,m,d] = s.split("-").map(Number); return Date.UTC(y, m-1, d); }
+function weekKey(s) { const t = new Date(toUTC(s)); const day = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - day); return t.toISOString().slice(0,10); }
+function addDays(s, n) { const t = new Date(toUTC(s)); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0,10); }
+function prettyDate(s) {
+  const t = todayStr();
+  if (s === t) return "Aujourd'hui";
+  if (s === addDays(t, -1)) return "Hier";
+  return new Date(toUTC(s)).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+}
+function uidGen() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+/* ---------- State ---------- */
+function defaultState() {
+  return { log: [], equipped: { top: "tee", hat: null, hands: null, tool: null, extra: null, pet: null, backdrop: null },
+           look: { skin: 1, hair: 0, style: "short" }, lastArr: 11 };
+}
+function normalize(s) {
+  const d = defaultState();
+  if (!s || typeof s !== "object") return d;
+  return {
+    log: Array.isArray(s.log) ? s.log.filter(e => e && e.date && e.count > 0 && e.arr >= 1 && e.arr <= 20) : [],
+    equipped: Object.assign(d.equipped, s.equipped || {}),
+    look: Object.assign(d.look, s.look || {}),
+    lastArr: s.lastArr >= 1 && s.lastArr <= 20 ? s.lastArr : 11
+  };
+}
+let state = defaultState();
+
+function derive(log) {
+  const entries = [...log].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0));
+  const weeks = [...new Set(entries.map(e => weekKey(e.date)))].sort();
+  const run = {}; let prev = null, len = 0;
+  for (const w of weeks) { len = (prev && addDays(prev, 7) === w) ? len + 1 : 1; run[w] = len; prev = w; }
+  const seen = new Set(), perArr = {}, ptsById = {};
+  let points = 0, bags = 0, steps = 0;
+  for (const e of entries) {
+    let p = e.count * PTS_BAG;
+    if (!seen.has(e.arr)) { p += PTS_NEW_ARR; seen.add(e.arr); }
+    if (run[weekKey(e.date)] >= 2) p += PTS_STREAK * e.count;
+    p += stepPts(e.steps);
+    points += p; bags += e.count; steps += e.steps || 0; perArr[e.arr] = (perArr[e.arr] || 0) + e.count; ptsById[e.id] = p;
+  }
+  const thisW = weekKey(todayStr());
+  const streak = run[thisW] || run[addDays(thisW, -7)] || 0;
+  return { points, bags, steps, perArr, ptsById, streak };
+}
+function levelOf(points) {
+  let i = 0; while (i + 1 < LEVELS.length && points >= LEVELS[i + 1][0]) i++;
+  return { i, name: LEVELS[i][1], floor: LEVELS[i][0], next: LEVELS[i + 1] || null };
+}
+const unlocked = (item, bags) => bags >= item.need;
+
+/* ---------- Avatar (SVG) ---------- */
+let svgN = 0;
+function backdrop(id, n) {
+  if (id === "seine") return `
+    <defs><linearGradient id="sk${n}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b4a94"/><stop offset=".55" stop-color="#e9875f"/><stop offset="1" stop-color="#f6c07a"/></linearGradient></defs>
+    <rect width="200" height="240" fill="url(#sk${n})"/>
+    <circle cx="140" cy="150" r="20" fill="#ffd98a"/>
+    <path d="M0 150 Q30 140 50 150 L50 170 L0 170Z M150 160 L200 150 L200 170 L150 170Z" fill="#3d3558"/>
+    <rect y="168" width="200" height="72" fill="#35507f"/>
+    <path d="M20 184 h40 M110 192 h50 M40 204 h60 M130 214 h40" stroke="#f6c07a" stroke-width="2" stroke-linecap="round" opacity=".7"/>`;
+  if (id === "skyline") return `
+    <rect width="200" height="240" fill="#16213f"/>
+    <g fill="#fff" opacity=".8"><circle cx="30" cy="40" r="1.3"/><circle cx="60" cy="24" r="1"/><circle cx="160" cy="36" r="1.2"/><circle cx="118" cy="20" r="1"/><circle cx="182" cy="70" r="1"/></g>
+    <circle cx="40" cy="60" r="10" fill="#f3e6b0"/>
+    <path d="M160 30 L156 100 L152 150 L143 196 L150 196 L160 166 L170 196 L177 196 L168 150 L164 100Z" fill="#0b1127"/>
+    <path d="M154 120 h12 M151 150 h18" stroke="#0b1127" stroke-width="3"/>
+    <path d="M0 170 L0 150 L20 138 L40 150 L40 142 L60 130 L80 142 L80 170Z M120 170 L120 146 L140 134 L150 146 L150 170Z M175 170 L175 150 L200 140 L200 170Z" fill="#5d6b80"/>
+    <g fill="#f2d024" opacity=".85"><rect x="12" y="152" width="5" height="6"/><rect x="50" y="146" width="5" height="6"/><rect x="128" y="152" width="5" height="6"/></g>
+    <rect y="170" width="200" height="70" fill="#27334f"/>`;
+  return `<rect width="200" height="240" style="fill:var(--disc)"/>`;
+}
+function avatarSVG(eq, look, bags = 0, cls = "avatar") {
+  const n = ++svgN;
+  const skin = SKINS[look.skin] || SKINS[1], hair = HAIRS[look.hair] || HAIRS[0], style = look.style || "short";
+  const top = eq.top || "tee";
+  const sleeve = { tee: "#4a7bd0", mariniere: `url(#st${n})`, vest: "#5b6475", overalls: "#ece6d6" }[top];
+  const legs = top === "overalls" ? "#2f6b4f" : "#2a3346";
+  const handFill = eq.hands === "gloves" ? "#e3a41c" : skin;
+  const s = [];
+  s.push(`<svg class="${cls}" viewBox="0 0 200 240" role="img" aria-label="Avatar"><defs>
+    <clipPath id="c${n}"><circle cx="100" cy="118" r="96"/></clipPath>
+    <pattern id="st${n}" width="10" height="9" patternUnits="userSpaceOnUse"><rect width="10" height="9" fill="#f7f6f0"/><rect y="5" width="10" height="4" fill="#1f3a73"/></pattern></defs>`);
+  s.push(`<g clip-path="url(#c${n})">${backdrop(eq.backdrop, n)}</g>`);
+  s.push(`<ellipse cx="100" cy="222" rx="50" ry="6" fill="#000" opacity=".12"/>`);
+  if (eq.extra === "cape") s.push(`<path d="M72 126 Q100 118 128 126 L148 214 Q100 226 52 214 Z" fill="#c8323a"/><path d="M72 126 Q100 118 128 126 L132 140 Q100 132 68 140Z" fill="#a4242c"/>`);
+  if (style === "long") s.push(`<path d="M68 84 Q64 128 78 134 L122 134 Q136 128 132 84Z" fill="${hair}"/>`);
+  // legs & shoes
+  s.push(`<rect x="83" y="172" width="15" height="46" rx="6" fill="${legs}"/><rect x="102" y="172" width="15" height="46" rx="6" fill="${legs}"/>
+    <ellipse cx="89" cy="219" rx="11" ry="5" fill="#1b1b1f"/><ellipse cx="111" cy="219" rx="11" ry="5" fill="#1b1b1f"/>`);
+  // arms
+  s.push(`<rect x="55" y="124" width="15" height="52" rx="7.5" fill="${sleeve}"/><rect x="130" y="124" width="15" height="52" rx="7.5" fill="${sleeve}"/>`);
+  // torso
+  if (top === "tee") s.push(`<rect x="66" y="116" width="68" height="68" rx="20" fill="#4a7bd0"/>`);
+  if (top === "mariniere") s.push(`<rect x="66" y="116" width="68" height="68" rx="20" fill="url(#st${n})"/>`);
+  if (top === "vest") s.push(`<rect x="66" y="116" width="68" height="68" rx="20" fill="#5b6475"/>
+    <path d="M70 124 Q76 116 90 116 L96 184 L74 184 Q66 184 66 172Z M130 124 Q124 116 110 116 L104 184 L126 184 Q134 184 134 172Z" fill="#ff8a1f"/>
+    <path d="M67 150 H96 M104 150 H133 M67 166 H96 M104 166 H133" stroke="#e7ebf0" stroke-width="5"/>`);
+  if (top === "overalls") s.push(`<rect x="66" y="116" width="68" height="68" rx="20" fill="#ece6d6"/>
+    <rect x="78" y="136" width="44" height="48" rx="6" fill="#2f6b4f"/>
+    <path d="M80 138 L74 118 M120 138 L126 118" stroke="#2f6b4f" stroke-width="6" stroke-linecap="round"/>
+    <rect x="90" y="146" width="20" height="14" rx="3" fill="#25583f"/><circle cx="84" cy="140" r="2.5" fill="#f2d024"/><circle cx="116" cy="140" r="2.5" fill="#f2d024"/>`);
+  // trash bag held in left hand
+  if (bags > 0) s.push(`<path d="M50 220 Q42 196 56 186 L70 186 Q84 196 76 220 Q63 226 50 220Z" fill="#2c3d35"/>
+    <path d="M58 188 L55 180 M68 188 L71 180" stroke="#2c3d35" stroke-width="4" stroke-linecap="round"/>
+    <path d="M56 200 Q60 212 58 216" stroke="#fff" stroke-width="2" fill="none" opacity=".25" stroke-linecap="round"/>`);
+  // tool in right hand
+  if (eq.tool) {
+    const c = eq.tool === "golden" ? "#d4a017" : "#7b8594";
+    s.push(`<path d="M138 170 L170 226" stroke="${c}" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M168 222 L162 232 M170 224 L176 233" stroke="${c}" stroke-width="3.5" stroke-linecap="round"/>`);
+    if (eq.tool === "golden") s.push(`<path d="M176 196 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2Z" fill="#f2d024"/>`);
+  }
+  // hands
+  s.push(`<circle cx="62.5" cy="178" r="8.5" fill="${handFill}"/><circle cx="137.5" cy="178" r="8.5" fill="${handFill}"/>`);
+  // neck, scarf, head
+  s.push(`<rect x="92" y="104" width="16" height="16" rx="4" fill="${skin}"/>`);
+  if (eq.extra === "scarf") s.push(`<path d="M78 112 Q100 126 122 112 L122 124 Q100 138 78 124Z" fill="#c8323a"/><rect x="104" y="122" width="12" height="28" rx="3" fill="#c8323a"/><path d="M106 146 v6 M110 146 v6 M114 146 v6" stroke="#c8323a" stroke-width="2"/>`);
+  s.push(`<circle cx="70" cy="86" r="6" fill="${skin}"/><circle cx="130" cy="86" r="6" fill="${skin}"/><circle cx="100" cy="82" r="30" fill="${skin}"/>`);
+  s.push(`<circle cx="89" cy="85" r="3.2" fill="#1d1d1d"/><circle cx="111" cy="85" r="3.2" fill="#1d1d1d"/>
+    <path d="M91 96 Q100 104 109 96" stroke="#1d1d1d" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="83" cy="94" r="4.5" fill="#f07f7f" opacity=".3"/><circle cx="117" cy="94" r="4.5" fill="#f07f7f" opacity=".3"/>`);
+  // hair
+  if (style === "buzz") s.push(`<path d="M71 76 Q76 52 100 51 Q124 52 129 76 Q100 64 71 76Z" fill="${hair}" opacity=".9"/>`);
+  else s.push(`<path d="M69 82 Q70 50 100 50 Q130 50 131 82 Q120 66 100 68 Q82 66 69 82Z" fill="${hair}"/>`);
+  if (style === "bun" && eq.hat == null) s.push(`<circle cx="100" cy="46" r="11" fill="${hair}"/>`);
+  // hats
+  if (eq.hat === "beret") s.push(`<ellipse cx="96" cy="58" rx="35" ry="11" fill="#1f1f29" transform="rotate(-9 96 58)"/><rect x="93" y="42" width="4" height="8" rx="2" fill="#1f1f29"/>`);
+  if (eq.hat === "bucket") s.push(`<path d="M74 64 Q76 40 100 40 Q124 40 126 64Z" fill="#e6c34a"/><ellipse cx="100" cy="65" rx="37" ry="7" fill="#cfa931"/>`);
+  if (eq.hat === "crown") s.push(`<path d="M72 60 L72 42 L85 52 L100 22 L115 52 L128 42 L128 60Z" fill="#e7b416" stroke="#a87c06" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M100 30 L96 52 M100 30 L104 52 M97 44 h6" stroke="#a87c06" stroke-width="1.5"/><circle cx="80" cy="55" r="2.5" fill="#c8323a"/><circle cx="120" cy="55" r="2.5" fill="#1f3a73"/>`);
+  // pet
+  if (eq.pet === "pigeon") s.push(`<g transform="translate(18 196)">
+    <path d="M4 14 L-4 10 L-2 16Z" fill="#6f7888"/><ellipse cx="14" cy="14" rx="13" ry="9" fill="#8d97a6"/><path d="M6 12 Q14 8 20 14" stroke="#6f7888" stroke-width="2" fill="none"/>
+    <circle cx="26" cy="5" r="6" fill="#7d8796"/><path d="M22 9 Q26 12 29 9" stroke="#4f9c7a" stroke-width="3" fill="none"/>
+    <path d="M31 5 L36 6 L31 7Z" fill="#e0a040"/><circle cx="27.5" cy="4" r="1.3" fill="#e0582f"/>
+    <path d="M12 22 v5 M17 22 v5" stroke="#e08a8a" stroke-width="2"/></g>`);
+  s.push(`</svg>`);
+  return s.join("");
+}
+
+/* ---------- Supabase ---------- */
+const CFG = window.RAMASSE_CONFIG || {};
+// Accept the URL with or without a trailing "/rest/v1/" (a common copy-paste from the dashboard).
+const SUPA_URL = String(CFG.supabaseUrl || "").trim().replace(/\/rest\/v1\/?$/, "").replace(/\/+$/, "");
+const SUPA_KEY = String(CFG.supabaseAnonKey || "").trim();
+const configured = !!(SUPA_URL && SUPA_KEY && !/YOUR[-_]/.test(SUPA_URL + SUPA_KEY));
+const sb = configured && window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+const LEGACY_KEY = "ramasse.v1"; // progress saved by the earlier device-only version
+let currentUser = null;  // { id }
+let profile = null;      // row from public.profiles
+
+function setSync(s) {
+  const el = $("sync"); el.dataset.s = s === "saving" ? "local" : s;
+  el.textContent = s === "cloud" ? "Synchronisé" : s === "saving" ? "Enregistrement…" : "Non synchronisé";
+}
+function rowToEntry(r) {
+  return { id: r.id, date: r.date, arr: r.arr, count: r.count, steps: r.steps || 0, mins: r.mins || 0, note: r.note || "", ts: Date.parse(r.created_at) || 0 };
+}
+function entryToRow(e) {
+  return { date: e.date, arr: e.arr, count: e.count, steps: e.steps || null, mins: e.mins || null, note: e.note || null };
+}
+const isNetworkError = (err) => !err || !err.code || /fetch|network/i.test(err.message || "");
+
+async function loadMyData() {
+  const [p, r] = await Promise.all([
+    sb.from("profiles").select("*").eq("id", currentUser.id).maybeSingle(),
+    sb.from("pickups").select("*").eq("user_id", currentUser.id).order("date").order("created_at")
+  ]);
+  if (p.error || r.error) throw (p.error || r.error);
+  profile = p.data;
+  state = normalize({ log: (r.data || []).map(rowToEntry), equipped: profile?.equipped, look: profile?.look, lastArr: profile?.last_arr });
+}
+
+// Takes off anything the player hasn't earned (e.g. after deleting pickups).
+function sanitizeEquipped() {
+  const bags = derive(state.log).bags;
+  let changed = false;
+  for (const it of ITEMS) {
+    if (state.equipped[it.slot] === it.id && !unlocked(it, bags)) {
+      state.equipped[it.slot] = it.slot === "top" ? "tee" : null;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+let profT = null;
+function saveProfile() {
+  clearTimeout(profT);
+  setSync("saving");
+  profT = setTimeout(async () => {
+    const { error } = await sb.from("profiles")
+      .update({ equipped: state.equipped, look: state.look, last_arr: state.lastArr })
+      .eq("id", currentUser.id);
+    setSync(error ? "error" : "cloud");
+  }, 600);
+}
+
+async function addPickup(entry) {
+  setSync("saving");
+  const { data, error } = await sb.from("pickups").insert(entryToRow(entry)).select().single();
+  if (error) { setSync(isNetworkError(error) ? "error" : "cloud"); throw error; }
+  setSync("cloud");
+  return rowToEntry(data);
+}
+async function deletePickup(id) {
+  setSync("saving");
+  const { error } = await sb.from("pickups").delete().eq("id", id);
+  setSync(error ? "error" : "cloud");
+  if (error) throw error;
+}
+
+function readLegacy() {
+  try {
+    if (localStorage.getItem(LEGACY_KEY + ".imported")) return null;
+    const old = JSON.parse(localStorage.getItem(LEGACY_KEY) || "null");
+    return old && Array.isArray(old.log) && old.log.length ? normalize(old) : null;
+  } catch { return null; }
+}
+// Moves pickups saved on this phone by the earlier version into the account, once.
+async function importLegacy() {
+  const old = readLegacy();
+  if (!old || state.log.length) return;
+  const rows = old.log.map(e => entryToRow(Object.assign({}, e, { count: Math.min(20, e.count) })));
+  const { data, error } = await sb.from("pickups").insert(rows).select();
+  if (error) { toast("Impossible de récupérer les sacs enregistrés sur cet appareil"); return; }
+  state.log = data.map(rowToEntry);
+  try { localStorage.setItem(LEGACY_KEY + ".imported", "1"); } catch {}
+  toast(`${fmt(derive(state.log).bags)} sacs récupérés depuis cet appareil`);
+}
+
+/* ---------- Usernames ---------- */
+const NAME_RE = /^[A-Za-z0-9_.-]{3,20}$/;
+const NAME_MSG = {
+  format: "3 à 20 caractères : lettres, chiffres, point, tiret ou _",
+  blocked: "Ce pseudo n'est pas autorisé. Choisis-en un autre.",
+  taken: "Ce pseudo est déjà pris.",
+  error: "Vérification impossible pour l'instant. Réessaie.",
+  ok: "Disponible"
+};
+async function checkUsername(u) {
+  if (!NAME_RE.test(u)) return "format";
+  const { data, error } = await sb.rpc("username_problem", { u });
+  if (error) return "error";
+  return data || null;
+}
+function problemFromError(error) {
+  if (!error) return null;
+  if (error.code === "23505") return "taken";
+  if (/username_blocked/.test(error.message)) return "blocked";
+  if (/username_format/.test(error.message)) return "format";
+  return "error";
+}
+function showNameMsg(msgId, problem) {
+  const el = $(msgId);
+  el.textContent = NAME_MSG[problem || "ok"];
+  el.dataset.s = problem ? (problem === "format" ? "" : "bad") : "ok";
+}
+// Live check while typing, ignoring answers that arrive out of order.
+function wireNameInput(inputId, msgId, skipIf) {
+  let t = null, seq = 0;
+  $(inputId).addEventListener("input", () => {
+    clearTimeout(t);
+    const u = $(inputId).value.trim();
+    if (skipIf && skipIf(u)) { showNameMsg(msgId, "format"); $(msgId).textContent = "C'est ton pseudo actuel."; return; }
+    if (!NAME_RE.test(u)) { showNameMsg(msgId, "format"); if (u.length >= 3) $(msgId).dataset.s = "bad"; return; }
+    $(msgId).textContent = "Vérification…"; $(msgId).dataset.s = "";
+    const mine = ++seq;
+    t = setTimeout(async () => {
+      const problem = await checkUsername(u);
+      if (mine === seq) showNameMsg(msgId, problem);
+    }, 350);
+  });
+}
+
+/* ---------- Sign-in flow ---------- */
+// Accounts have no real e-mail: Supabase gets a hidden internal address that never receives mail.
+const LOGIN_DOMAIN = "ramasse.netlify.app";
+const hiddenLoginEmail = () => `${crypto.randomUUID()}@${LOGIN_DOMAIN}`;
+const MIN_PWD = 8;
+
+function showGate(step) {
+  $("gate").hidden = false; $("app").hidden = true; $("tabs").hidden = true;
+  ["gateLoading", "loginForm", "signupForm", "nameForm", "setupMsg"].forEach(id => $(id).hidden = id !== step);
+  $("gateErr").textContent = "";
+}
+function busy(btn, on, label) {
+  if (on) { btn.dataset.label = btn.textContent; btn.textContent = label || "Patiente…"; btn.disabled = true; }
+  else { btn.textContent = btn.dataset.label || btn.textContent; btn.disabled = false; }
+}
+
+async function afterSignIn(session) {
+  currentUser = { id: session.user.id };
+  showGate("gateLoading");
+  try { await loadMyData(); }
+  catch { $("gateErr").textContent = "Impossible de charger tes données. Vérifie ta connexion puis recharge la page."; return; }
+  if (!profile) { showGate("nameForm"); $("username").focus(); return; }
+  await enterApp();
+}
+async function enterApp() {
+  await importLegacy();
+  if (sanitizeEquipped()) saveProfile();
+  $("gate").hidden = true; $("app").hidden = false; $("tabs").hidden = false;
+  renderAll(); renderAccount(); setSync("cloud");
+  try { const t = localStorage.getItem("ramasse.tab"); if (t && t !== "home") $("tabbtn-" + t)?.click(); } catch {}
+  refreshRankings();
+}
+function renderAccount() {
+  $("accName").textContent = "@" + (profile?.username || "");
+}
+
+/* ---------- Rankings ---------- */
+let boardRows = null, arrRows = null, boardArr = 0, rankSeq = 0, rankT = null;
+function refreshRankingsSoon() { clearTimeout(rankT); rankT = setTimeout(refreshRankings, 800); }
+async function refreshRankings() {
+  if (!currentUser) return;
+  const mine = ++rankSeq;
+  const [lb, ar] = await Promise.all([
+    sb.rpc("get_leaderboard", { p_arr: boardArr || null, p_limit: 50 }),
+    sb.rpc("get_arrondissement_ranking")
+  ]);
+  if (mine !== rankSeq) return;
+  boardRows = lb.error ? null : lb.data;
+  arrRows = ar.error ? null : ar.data;
+  renderBoard(); renderArrRank();
+}
+
+function renderArrRank() {
+  const mine = derive(state.log).perArr;
+  const rows = arrRows
+    ? arrRows.map(r => ({ arr: Number(r.arr), bags: Number(r.bags), players: Number(r.players) }))
+    : Object.entries(mine).map(([a, b]) => ({ arr: Number(a), bags: b, players: 1 })).sort((x, y) => y.bags - x.bags);
+  $("arrRankNote").textContent = arrRows
+    ? "Total des sacs ramassés par tous les joueurs de Ramasse, par arrondissement. Les barres jaunes : ceux que tu as aidé à nettoyer."
+    : "Classement indisponible pour l'instant. Voici tes propres sacs.";
+  if (!rows.length) { $("arrRank").innerHTML = `<li class="empty" style="display:block">Aucun sac pour l'instant. Le premier arrondissement du classement pourrait être le tien.</li>`; return; }
+  const top = rows[0].bags || 1;
+  $("arrRank").innerHTML = rows.map((r, i) => `<li class="${mine[r.arr] ? "mine" : ""}"><span class="rank">${i + 1}</span>${plaque(r.arr)}
+      <div class="nm"><b>${esc(ARR_NAMES[r.arr - 1])}</b><div class="track"><i style="width:${Math.max(3, r.bags / top * 100)}%"></i></div></div>
+      <div class="num">${fmt(r.bags)}<small>${fmt(r.bags * BAG_L)} L · ${r.players} joueur${r.players > 1 ? "s" : ""}</small></div></li>`).join("");
+}
+
+function renderBoard() {
+  if (!boardRows) {
+    $("boardNote").textContent = "Classement indisponible pour l'instant. Vérifie ta connexion.";
+    $("board").innerHTML = "";
+    return;
+  }
+  const a = boardArr;
+  $("boardNote").textContent = a
+    ? `Qui a le plus nettoyé le ${ordTxt(a)} (${ARR_NAMES[a - 1]}).`
+    : "Tous les joueurs de Ramasse, classés par nombre de sacs.";
+  if (!boardRows.length) {
+    $("board").innerHTML = `<li class="empty" style="display:block">${a ? `Aucun sac dans le ${ordTxt(a)} pour l'instant. Sois le premier ou la première.` : "Personne au classement pour l'instant. Note un sac pour prendre la première place."}</li>`;
+    return;
+  }
+  $("board").innerHTML = boardRows.map((r, i) => {
+    const isMe = currentUser && r.user_id === currentUser.id;
+    const bags = Number(r.bags) || 0, score = a ? Number(r.arr_bags) || 0 : bags;
+    const lv = levelOf(Number(r.points) || 0);
+    const sub = a ? `${fmt(bags)} sacs au total` : esc(lv.name) + (r.home ? " · " + ordTxt(Number(r.home)) : "") + (Number(r.steps) ? " · " + fmt(Number(r.steps)) + " pas" : "");
+    return `<li class="${isMe ? "me" : ""}"><span class="rank">${i + 1}</span>
+      ${avatarSVG(normalize({ equipped: r.equipped }).equipped, normalize({ look: r.look }).look, bags)}
+      <div class="who"><b>@${esc(r.username)}${isMe ? " (toi)" : ""}</b><span class="small">${sub}</span></div>
+      <div class="num">${fmt(score)}<small>sacs</small></div></li>`;
+  }).join("");
+}
+
+/* ---------- Rendering ---------- */
+let curSlot = "top";
+function renderAll() { renderHome(); renderWardrobe(); renderParis(); }
+
+function renderHome() {
+  const d = derive(state.log), lv = levelOf(d.points);
+  $("heroAvatar").innerHTML = avatarSVG(state.equipped, state.look, d.bags);
+  $("lvlNum").textContent = "Niveau " + (lv.i + 1);
+  $("lvlName").textContent = lv.name;
+  $("pts").textContent = fmt(d.points);
+  const pct = lv.next ? (d.points - lv.floor) / (lv.next[0] - lv.floor) * 100 : 100;
+  $("bar").style.width = Math.max(2, pct) + "%";
+  $("nextLvl").textContent = lv.next ? `Encore ${fmt(lv.next[0] - d.points)} pts avant « ${lv.next[1]} »` : "Niveau maximum atteint";
+  $("sBags").textContent = fmt(d.bags);
+  $("sLitres").textContent = fmt(d.bags * BAG_L);
+  $("sSteps").textContent = d.steps >= 100000 ? Math.round(d.steps / 1000) + "k" : fmt(d.steps);
+  $("sStreak").textContent = d.streak;
+
+  const nxt = ITEMS.filter(i => i.need > d.bags).sort((a, b) => a.need - b.need)[0];
+  if (nxt) {
+    const eq = Object.assign({}, state.equipped, { [nxt.slot]: nxt.id });
+    const prevNeed = Math.max(0, ...ITEMS.filter(i => i.need <= d.bags).map(i => i.need));
+    const p = (d.bags - prevNeed) / (nxt.need - prevNeed) * 100;
+    const left = nxt.need - d.bags;
+    $("nextUnlock").innerHTML = `<div class="next-unlock"><div class="thumb">${avatarSVG(eq, state.look, d.bags)}</div>
+      <div><div class="eyebrow">Prochain déblocage</div><b>${esc(nxt.name)}</b>
+      <div class="small">Encore ${left} sac${left > 1 ? "s" : ""} (${fmt(left * BAG_L)} L)</div>
+      <div class="mini-bar"><i style="width:${p}%"></i></div></div></div>`;
+  } else $("nextUnlock").innerHTML = `<div class="next-unlock" style="grid-template-columns:1fr"><div><div class="eyebrow">Garde-robe complète</div><b>Tous les objets sont débloqués. Paris te doit une fière chandelle.</b></div></div>`;
+
+  const list = [...state.log].sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : (b.ts || 0) - (a.ts || 0)).slice(0, 30);
+  if (!list.length) {
+    $("history").innerHTML = `<li class="empty" style="display:block">Aucun ramassage pour l'instant. Remplis un sac de 30 L lors de ta prochaine balade et note-le ici : 150 pts et des gants de travail à la clé.</li>`;
+    return;
+  }
+  $("history").innerHTML = list.map(e => `<li data-id="${esc(e.id)}">
+      ${plaque(e.arr)}
+      <div class="meta"><b>${e.count} sac${e.count > 1 ? "s" : ""} · ${fmt(e.count * BAG_L)} L</b>
+        <p>${esc(prettyDate(e.date))} · ${esc(ARR_NAMES[e.arr - 1])}${e.steps ? " · " + fmt(e.steps) + " pas" : ""}${e.mins ? " · " + e.mins + " min" : ""}${e.note ? " · " + esc(e.note) : ""}</p></div>
+      <div class="right"><span class="gain">+${fmt(d.ptsById[e.id] || 0)}</span>
+        <span class="acts"><button type="button" class="linkbtn" data-del="${esc(e.id)}">Supprimer</button></span></div>
+    </li>`).join("");
+}
+
+function renderWardrobe() {
+  const d = derive(state.log);
+  $("stageAvatar").innerHTML = avatarSVG(state.equipped, state.look, d.bags);
+  $("slotChips").innerHTML = SLOTS.map(([k, label]) => {
+    const have = ITEMS.filter(i => i.slot === k && unlocked(i, d.bags)).length, total = ITEMS.filter(i => i.slot === k).length;
+    return `<button type="button" class="chip" role="tab" data-slot="${k}" aria-pressed="${k === curSlot}">${label} <span class="small">${have}/${total}</span></button>`;
+  }).join("");
+  const opts = ITEMS.filter(i => i.slot === curSlot);
+  const cards = [];
+  if (curSlot !== "top") {
+    const eq = Object.assign({}, state.equipped, { [curSlot]: null });
+    cards.push(`<button type="button" class="item" data-item="" aria-pressed="${state.equipped[curSlot] == null}">${avatarSVG(eq, state.look, d.bags)}<b>Aucun</b><small>&nbsp;</small></button>`);
+  }
+  for (const it of opts) {
+    const ok = unlocked(it, d.bags), eq = Object.assign({}, state.equipped, { [curSlot]: it.id });
+    cards.push(`<button type="button" class="item${ok ? "" : " locked"}" data-item="${it.id}" aria-pressed="${state.equipped[curSlot] === it.id}" ${ok ? "" : 'aria-disabled="true"'}>
+      ${avatarSVG(eq, state.look, d.bags)}${ok ? "" : `<span class="lock">${it.need} sacs</span>`}
+      <b>${esc(it.name)}</b><small>${it.need ? fmt(it.need * BAG_L) + " L" : "De base"}</small></button>`);
+  }
+  $("items").innerHTML = cards.join("");
+  $("lookSkin").innerHTML = `<span class="lbl">Peau</span>` + SKINS.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-skin="${i}" aria-label="Teint ${i + 1}" aria-pressed="${state.look.skin === i}"></button>`).join("");
+  $("lookHair").innerHTML = `<span class="lbl">Cheveux</span>` + HAIRS.map((c, i) => `<button type="button" class="swatch" style="background:${c}" data-hair="${i}" aria-label="Couleur de cheveux ${i + 1}" aria-pressed="${state.look.hair === i}"></button>`).join("");
+  $("lookStyle").innerHTML = `<span class="lbl">Coupe</span>` + STYLES.map(([k, l]) => `<button type="button" class="chip" data-style="${k}" aria-pressed="${state.look.style === k}">${l}</button>`).join("");
+}
+
+function renderParis() {
+  const d = derive(state.log);
+  const max = Math.max(1, ...Object.values(d.perArr));
+  $("arrGrid").innerHTML = Array.from({ length: 20 }, (_, i) => {
+    const n = i + 1, c = d.perArr[n] || 0;
+    return `<div class="arr" title="${esc(ARR_NAMES[i])}"><span class="heat" style="opacity:${c ? .15 + .55 * c / max : 0}"></span>${plaque(n)}<span class="c">${c || "–"}</span></div>`;
+  }).join("");
+  renderArrRank();
+}
+
+/* ---------- Log sheet ---------- */
+let draft = { count: 1, arr: 11 };
+function openSheet() {
+  draft = { count: 1, arr: state.lastArr };
+  $("logDate").value = todayStr();
+  $("logDate").max = todayStr();
+  $("logNote").value = "";
+  $("logSteps").value = "";
+  $("logMins").value = "";
+  renderSheet();
+  $("sheet").hidden = false;
+  $("plus").focus();
+}
+function closeSheet() { $("sheet").hidden = true; $("openLog").focus(); }
+function renderSheet() {
+  $("count").textContent = draft.count;
+  $("litresOut").textContent = fmt(draft.count * BAG_L) + " litres";
+  $("pickArr").innerHTML = Array.from({ length: 20 }, (_, i) =>
+    `<button type="button" data-arr="${i + 1}" aria-pressed="${draft.arr === i + 1}" aria-label="${ordTxt(i + 1)} arrondissement, ${esc(ARR_NAMES[i])}">${plaque(i + 1)}</button>`).join("");
+  $("arrName").textContent = ordTxt(draft.arr) + " · " + ARR_NAMES[draft.arr - 1];
+  const before = derive(state.log).points;
+  const after = derive([...state.log, { id: "_p", date: $("logDate").value || todayStr(), arr: draft.arr, count: draft.count, steps: readInt("logSteps", 100000), ts: Date.now() }]).points;
+  $("previewGain").textContent = `Ce ramassage rapporte +${fmt(after - before)} pts`;
+}
+function readInt(id, max) { const v = Math.round(Number($(id).value)); return v > 0 ? Math.min(v, max) : 0; }
+
+/* ---------- Unlock modal ---------- */
+let pendingUnlocks = [];
+function showNextUnlock() {
+  const it = pendingUnlocks.shift();
+  if (!it) { $("unlock").hidden = true; return; }
+  const d = derive(state.log);
+  $("unlockAvatar").innerHTML = avatarSVG(Object.assign({}, state.equipped, { [it.slot]: it.id }), state.look, d.bags);
+  $("unlockTitle").textContent = it.name;
+  $("unlockText").textContent = it.blurb || "";
+  $("wearIt").dataset.item = it.id;
+  $("unlock").hidden = false;
+  $("wearIt").focus();
+}
+
+let toastT;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+
+/* ---------- Events ---------- */
+document.querySelectorAll(".tabs [data-tab]").forEach(b => b.addEventListener("click", () => {
+  const t = b.dataset.tab;
+  document.querySelectorAll(".tabs [data-tab]").forEach(x => x.setAttribute("aria-selected", x === b));
+  ["home", "wardrobe", "paris"].forEach(k => $("tab-" + k).hidden = k !== t);
+  window.scrollTo(0, 0);
+  try { localStorage.setItem("ramasse.tab", t); } catch {}
+  if (t === "paris") refreshRankings();
+}));
+
+$("openLog").addEventListener("click", openSheet);
+$("cancelLog").addEventListener("click", closeSheet);
+$("sheet").addEventListener("click", (e) => { if (e.target.id === "sheet") closeSheet(); });
+$("minus").addEventListener("click", () => { draft.count = Math.max(1, draft.count - 1); renderSheet(); });
+$("plus").addEventListener("click", () => { draft.count = Math.min(20, draft.count + 1); renderSheet(); });
+$("pickArr").addEventListener("click", (e) => { const b = e.target.closest("[data-arr]"); if (!b) return; draft.arr = Number(b.dataset.arr); renderSheet(); });
+$("logDate").addEventListener("change", renderSheet);
+$("logSteps").addEventListener("input", () => {
+  const before = derive(state.log).points;
+  const after = derive([...state.log, { id: "_p", date: $("logDate").value || todayStr(), arr: draft.arr, count: draft.count, steps: readInt("logSteps", 100000), ts: Date.now() }]).points;
+  $("previewGain").textContent = `Ce ramassage rapporte +${fmt(after - before)} pts`;
+});
+$("boardArr").innerHTML += ARR_NAMES.map((nm, i) => `<option value="${i + 1}">${ordTxt(i + 1)} · ${esc(nm)}</option>`).join("");
+$("boardArr").addEventListener("change", () => {
+  boardArr = Number($("boardArr").value);
+  $("boardNote").textContent = "Chargement du classement…"; $("board").innerHTML = "";
+  refreshRankings();
+});
+$("logForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("logForm").querySelector('button[type="submit"]');
+  if (btn.disabled) return;
+  const date = $("logDate").value || todayStr();
+  const before = derive(state.log), lvBefore = levelOf(before.points);
+  const draftEntry = { id: uidGen(), date, arr: draft.arr, count: draft.count, note: $("logNote").value.trim().slice(0, 120), ts: Date.now() };
+  const steps = readInt("logSteps", 100000), mins = readInt("logMins", 600);
+  if (steps) draftEntry.steps = steps;
+  if (mins) draftEntry.mins = mins;
+  busy(btn, true, "Enregistrement…");
+  let entry;
+  try { entry = await addPickup(draftEntry); }
+  catch (err) {
+    busy(btn, false);
+    toast(/daily_limit/.test(err?.message || "")
+      ? "Maximum 20 sacs (600 L) par jour. Vérifie le nombre de sacs ou la date."
+      : "Enregistrement impossible. Vérifie ta connexion et réessaie.");
+    return;
+  }
+  busy(btn, false);
+  state.log.push(entry);
+  if (state.lastArr !== draft.arr) { state.lastArr = draft.arr; saveProfile(); }
+  const after = derive(state.log), lvAfter = levelOf(after.points);
+  renderAll(); closeSheet(); refreshRankingsSoon();
+  pendingUnlocks = ITEMS.filter(i => i.need > before.bags && i.need <= after.bags);
+  if (lvAfter.i > lvBefore.i) toast(`Niveau supérieur ! Te voilà « ${lvAfter.name} »`);
+  else toast(`+${fmt(after.points - before.points)} pts · ${fmt(after.bags * BAG_L)} L ramassés au total`);
+  if (pendingUnlocks.length) showNextUnlock();
+});
+
+$("history").addEventListener("click", async (e) => {
+  const del = e.target.closest("[data-del]"), yes = e.target.closest("[data-yes]"), no = e.target.closest("[data-no]");
+  if (del) {
+    del.parentElement.innerHTML = `<button type="button" class="linkbtn danger" data-yes="${del.dataset.del}">Confirmer</button><button type="button" class="linkbtn" data-no="1">Garder</button>`;
+  } else if (yes) {
+    yes.disabled = true;
+    try { await deletePickup(yes.dataset.yes); }
+    catch { toast("Suppression impossible. Vérifie ta connexion."); renderHome(); return; }
+    state.log = state.log.filter(x => x.id !== yes.dataset.yes);
+    if (sanitizeEquipped()) saveProfile();
+    renderAll(); refreshRankingsSoon(); toast("Ramassage supprimé");
+  } else if (no) renderHome();
+});
+
+$("slotChips").addEventListener("click", (e) => { const b = e.target.closest("[data-slot]"); if (!b) return; curSlot = b.dataset.slot; renderWardrobe(); });
+$("items").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-item]"); if (!b) return;
+  const id = b.dataset.item, it = ITEMS.find(i => i.id === id);
+  if (it && !unlocked(it, derive(state.log).bags)) { toast(`Se débloque à ${it.need} sacs (${fmt(it.need * BAG_L)} L)`); return; }
+  state.equipped[curSlot] = id || (curSlot === "top" ? "tee" : null);
+  saveProfile(); renderWardrobe(); renderHome();
+});
+document.querySelector("#tab-wardrobe").addEventListener("click", (e) => {
+  const s = e.target.closest("[data-skin]"), h = e.target.closest("[data-hair]"), st = e.target.closest("[data-style]");
+  if (!s && !h && !st) return;
+  if (s) state.look.skin = Number(s.dataset.skin);
+  if (h) state.look.hair = Number(h.dataset.hair);
+  if (st) state.look.style = st.dataset.style;
+  saveProfile(); renderWardrobe(); renderHome();
+});
+
+$("wearIt").addEventListener("click", () => {
+  const it = ITEMS.find(i => i.id === $("wearIt").dataset.item);
+  if (it) { state.equipped[it.slot] = it.id; saveProfile(); renderAll(); }
+  showNextUnlock();
+});
+$("closeUnlock").addEventListener("click", showNextUnlock);
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (!$("unlock").hidden) { pendingUnlocks = []; $("unlock").hidden = true; }
+  else if (!$("renameSheet").hidden) $("renameSheet").hidden = true;
+  else if (!$("pwdSheet").hidden) $("pwdSheet").hidden = true;
+  else if (!$("sheet").hidden) closeSheet();
+});
+
+
+/* ---------- Sign-in events ---------- */
+const authMessage = (error) => /rate|too many|seconds/i.test(error?.message || "")
+  ? "Trop de tentatives. Attends une minute puis réessaie."
+  : null;
+
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const u = $("loginName").value.trim(), password = $("loginPwd").value;
+  const btn = $("loginBtn");
+  busy(btn, true, "Connexion…"); $("gateErr").textContent = "";
+  const { data: email, error: lookupError } = await sb.rpc("login_email_for", { u });
+  let result = null;
+  if (!lookupError && email) result = await sb.auth.signInWithPassword({ email, password });
+  busy(btn, false);
+  if (lookupError && isNetworkError(lookupError)) { $("gateErr").textContent = "Connexion impossible. Vérifie ta connexion internet."; return; }
+  if (!result || result.error || !result.data.session) {
+    $("gateErr").textContent = authMessage(result?.error) || "Pseudo ou mot de passe incorrect.";
+    return;
+  }
+  $("loginPwd").value = "";
+  afterSignIn(result.data.session);
+});
+$("toSignup").addEventListener("click", () => {
+  $("signupName").value = ""; $("signupPwd").value = "";
+  showNameMsg("signupNameMsg", "format"); $("signupNameMsg").dataset.s = "";
+  showGate("signupForm"); $("signupName").focus();
+});
+$("toLogin").addEventListener("click", () => { showGate("loginForm"); $("loginName").focus(); });
+$("showPwd").addEventListener("change", () => { $("signupPwd").type = $("showPwd").checked ? "text" : "password"; });
+
+wireNameInput("signupName", "signupNameMsg");
+$("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const u = $("signupName").value.trim(), password = $("signupPwd").value;
+  const btn = $("signupBtn");
+  $("gateErr").textContent = "";
+  if (password.length < MIN_PWD) { $("gateErr").textContent = `Le mot de passe doit faire au moins ${MIN_PWD} caractères.`; return; }
+  busy(btn, true, "Création…");
+  const problem = await checkUsername(u);
+  if (problem) { busy(btn, false); showNameMsg("signupNameMsg", problem); return; }
+  const { data, error } = await sb.auth.signUp({ email: hiddenLoginEmail(), password });
+  if (error || !data.session) {
+    busy(btn, false);
+    $("gateErr").textContent = authMessage(error)
+      || (/password/i.test(error?.message || "") ? "Mot de passe trop faible. Choisis-en un plus long ou moins courant."
+      : !error ? "Inscription bloquée : dans Supabase, désactive « Confirm email » (voir le README)."
+      : "Inscription impossible pour l'instant. Réessaie dans un moment.");
+    return;
+  }
+  currentUser = { id: data.session.user.id };
+  const nameProblem = await createProfile(u);
+  busy(btn, false);
+  $("signupPwd").value = "";
+  if (nameProblem) {
+    // Someone took the name in the meantime: the account exists, so just ask for another name.
+    showGate("nameForm"); $("username").value = u; showNameMsg("nameMsg", nameProblem);
+  }
+});
+
+// Creates the player's profile and opens the app. Returns a username problem, or null on success.
+async function createProfile(u) {
+  const problem = await checkUsername(u);
+  if (problem) return problem;
+  const legacy = readLegacy();
+  const { data, error } = await sb.from("profiles").insert({
+    id: currentUser.id, username: u,
+    look: legacy ? legacy.look : state.look,
+    equipped: legacy ? legacy.equipped : state.equipped,
+    last_arr: legacy ? legacy.lastArr : state.lastArr
+  }).select().single();
+  const insertProblem = problemFromError(error);
+  if (insertProblem) return insertProblem;
+  profile = data;
+  state = normalize({ log: state.log, equipped: data.equipped, look: data.look, lastArr: data.last_arr });
+  await enterApp();
+  toast(`Bienvenue @${data.username} !`);
+  return null;
+}
+
+// Fallback: an account that exists but has no username yet.
+wireNameInput("username", "nameMsg");
+$("nameForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("nameBtn");
+  busy(btn, true);
+  const problem = await createProfile($("username").value.trim());
+  busy(btn, false);
+  if (problem) showNameMsg("nameMsg", problem);
+});
+
+/* ---------- Account events ---------- */
+wireNameInput("rename", "renameMsg", (u) => profile && u.toLowerCase() === profile.username.toLowerCase());
+$("renameBtn").addEventListener("click", () => {
+  $("rename").value = profile.username;
+  showNameMsg("renameMsg", "format");
+  $("renameSheet").hidden = false;
+  $("rename").focus(); $("rename").select();
+});
+$("cancelRename").addEventListener("click", () => { $("renameSheet").hidden = true; });
+$("renameSheet").addEventListener("click", (e) => { if (e.target.id === "renameSheet") $("renameSheet").hidden = true; });
+$("renameForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const u = $("rename").value.trim();
+  if (u === profile.username) { $("renameSheet").hidden = true; return; }
+  const btn = $("renameSave");
+  busy(btn, true);
+  let problem = await checkUsername(u);
+  if (!problem) {
+    const { data, error } = await sb.from("profiles").update({ username: u }).eq("id", currentUser.id).select().single();
+    problem = problemFromError(error);
+    if (!problem) {
+      profile = data; renderAccount(); refreshRankings();
+      $("renameSheet").hidden = true;
+      toast(`Te voilà @${data.username}`);
+    }
+  }
+  busy(btn, false);
+  if (problem) showNameMsg("renameMsg", problem);
+});
+$("pwdBtn").addEventListener("click", () => {
+  $("newPwd").value = ""; $("pwdMsg").textContent = ""; $("pwdMsg").dataset.s = "";
+  $("pwdSheet").hidden = false; $("newPwd").focus();
+});
+$("cancelPwd").addEventListener("click", () => { $("pwdSheet").hidden = true; });
+$("pwdSheet").addEventListener("click", (e) => { if (e.target.id === "pwdSheet") $("pwdSheet").hidden = true; });
+$("pwdForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const password = $("newPwd").value;
+  if (password.length < MIN_PWD) { $("pwdMsg").textContent = `Au moins ${MIN_PWD} caractères.`; $("pwdMsg").dataset.s = "bad"; return; }
+  const btn = $("pwdSave");
+  busy(btn, true);
+  const { error } = await sb.auth.updateUser({ password });
+  busy(btn, false);
+  if (error) {
+    $("pwdMsg").textContent = authMessage(error) || (/same|different/i.test(error.message) ? "C'est déjà ton mot de passe actuel." : "Changement impossible. Réessaie.");
+    $("pwdMsg").dataset.s = "bad";
+    return;
+  }
+  $("pwdSheet").hidden = true;
+  toast("Mot de passe modifié");
+});
+$("logoutBtn").addEventListener("click", () => sb.auth.signOut());
+
+/* ---------- Boot ---------- */
+$("gateAvatar").innerHTML = avatarSVG({ top: "tee", hat: "beret", hands: "gloves", tool: "grabber" }, { skin: 1, hair: 0, style: "short" }, 3);
+(async function boot() {
+  if (!sb) { showGate("setupMsg"); return; }
+  sb.auth.onAuthStateChange((event) => {
+    if (event !== "SIGNED_OUT") return;
+    currentUser = null; profile = null; state = defaultState(); boardRows = arrRows = null;
+    $("loginPwd").value = "";
+    showGate("loginForm");
+  });
+  const { data } = await sb.auth.getSession();
+  if (data.session) afterSignIn(data.session);
+  else showGate(readLegacy() ? "signupForm" : "loginForm");
+})();
+</script>
+</body>
+</html>
