@@ -1,0 +1,16 @@
+{
+  "name": "ramasse-app",
+  "version": "1.0.0",
+  "description": "Ramasse les déchets de ton quartier, gagne des points et habille ton avatar",
+  "scripts": {
+    "dev": "serve .",
+    "build": "echo 'No build step required for static HTML'",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.1.1"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}
