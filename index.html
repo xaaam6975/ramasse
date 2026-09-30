@@ -868,7 +868,11 @@ async function afterSignIn(session) {
   currentUser = { id: session.user.id };
   showGate("gateLoading");
   try { await loadMyData(); }
-  catch { $("gateErr").textContent = "Impossible de charger tes données. Vérifie ta connexion puis recharge la page."; return; }
+  catch (err) {
+    console.error("Ramasse: loading data failed", err);
+    $("gateErr").textContent = "Impossible de charger tes données. Vérifie ta connexion puis recharge la page.";
+    return;
+  }
   if (!profile) { showGate("nameForm"); $("username").focus(); return; }
   await enterApp();
 }
